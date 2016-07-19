@@ -1,5 +1,6 @@
 package com.camon.connector;
 
+import com.camon.connector.model.Server;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestFactory;

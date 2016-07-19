@@ -1,4 +1,4 @@
-package com.camon.connector;
+package com.camon.connector.model;
 
 import lombok.Data;
 
@@ -15,11 +15,11 @@ public class Server {
 
     private ServerStatus status;
 
-    Server() {
+    public Server() {
 
     }
 
-    Server(String host, int priority) {
+    public Server(String host, int priority) {
         this.host = host;
         this.priority = priority;
     }

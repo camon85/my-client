@@ -1,5 +1,7 @@
 package com.camon.connector;
 
+import com.camon.connector.model.Server;
+
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -14,21 +16,18 @@ public class ServerPool {
     public static SortedSet<Server> BAD_SERVERS = new TreeSet<>(Comparator.comparing(Server::getPriority));
 
     static {
-        registerServers();
+        // TODO  개발 테스트용
+        registerDummyServers();
     }
 
-    private static void registerServers() {
+    private static void registerDummyServers() {
         GOOD_SERVERS.add(new Server("http://localhost:8100", 100));
         GOOD_SERVERS.add(new Server("http://localhost:8200", 200));
         GOOD_SERVERS.add(new Server("http://localhost:8300", 300));
     }
 
-    synchronized public static void addServer(Server server) {
-
-    }
-
-    synchronized public static void removeServer(String url) {
-
+    private static void registerServers(SortedSet<Server> servers) {
+        GOOD_SERVERS = servers;
     }
 
     public static Server getBestServer() {
@@ -38,4 +37,13 @@ public class ServerPool {
 
         return GOOD_SERVERS.first();
     }
+
+    public static void addServer(Server server) {
+
+    }
+
+    public static void removeServer(String url) {
+
+    }
+
 }

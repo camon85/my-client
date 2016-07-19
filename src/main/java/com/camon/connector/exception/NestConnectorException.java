@@ -1,4 +1,4 @@
-package com.camon.connector;
+package com.camon.connector.exception;
 
 import lombok.extern.slf4j.Slf4j;
 

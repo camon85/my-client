@@ -1,5 +1,6 @@
 package com.camon.connector;
 
+import com.camon.connector.model.Server;
 import org.junit.Test;
 
 import java.util.*;

@@ -1,5 +1,6 @@
 package com.camon.connector;
 
+import com.camon.connector.model.Server;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -23,6 +24,7 @@ import static com.camon.connector.ServerPool.GOOD_SERVERS;
 /**
  * Created by camon on 2016-07-19.
  */
+@Deprecated
 @Component
 @Slf4j
 public class FailOverClient {

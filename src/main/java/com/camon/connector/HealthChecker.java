@@ -1,5 +1,6 @@
 package com.camon.connector;
 
+import com.camon.connector.model.Server;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
