@@ -44,11 +44,18 @@ public class CollectionTest {
         Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
         Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
         SortedSet<Server> collect = GOOD_SERVERS.stream()
-                .filter(s -> s.getUrl().equals("http://localhost:8100"))
+                .filter(s -> s.getHost().equals("http://localhost:8100"))
                 .collect(Collectors.toCollection(supplier));
 
 
         System.out.println(collect.first());
+
+    }
+
+    @Test
+    public void empty() {
+        SortedSet<Server> servers = new TreeSet<>(Comparator.comparing(Server::getPriority));
+        System.out.println(servers.size());
 
     }
 

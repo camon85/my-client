@@ -1,7 +1,5 @@
-package com.camon;
+package com.camon.connector;
 
-import com.camon.connector.FailOverClient;
-import com.camon.connector.Server;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -10,7 +8,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -23,25 +20,18 @@ import static com.camon.connector.ServerPool.BAD_SERVERS;
 import static com.camon.connector.ServerPool.GOOD_SERVERS;
 
 /**
- * Created by camon on 2016-07-18.
+ * Created by camon on 2016-07-19.
  */
-@Service
 @Slf4j
-public class HelloService {
+public class FailOverClient {
 
-
-    private Server getServerInfo() {
-        return GOOD_SERVERS.first();
-    }
-
-
-    public String call() {
-        Server currentServer = getServerInfo();
-        String url = currentServer.getHost();
-        log.info("ServerPool.CURRENT_SERVER: " + url);
+    public String get(String apuUrl) {
+        Server currentServer = getBestServer();
+        String host = currentServer.getHost();
+        log.info("ServerPool.CURRENT_SERVER: " + host);
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpget = new HttpGet(url);
+        HttpGet httpget = new HttpGet(host + apuUrl);
         HttpEntity entity;
         String content = null;
 
@@ -49,28 +39,30 @@ public class HelloService {
             entity = response.getEntity();
             content = IOUtils.toString(entity.getContent(), "UTF-8");
         } catch (ClientProtocolException e) {
-            log.info("##### HelloService ClientProtocolException");
+            log.info("##### ClientProtocolException");
         } catch (IOException e) {
-            log.info("##### HelloService IOException");
+            log.info("##### IOException");
             Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
             Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
             SortedSet<Server> collect = GOOD_SERVERS.stream()
-                    .filter(s -> !s.getHost().equals(url))
+                    .filter(s -> !s.getHost().equals(host))
                     .collect(Collectors.toCollection(supplier));
 
 
             GOOD_SERVERS = collect;
             BAD_SERVERS.add(currentServer);
 
-            call();
+            content = get(apuUrl);
         }
 
         return content;
-
     }
 
-    public String failOverGet(String apoiUrl) {
-        FailOverClient client = new FailOverClient();
-        return client.get(apoiUrl);
+    private Server getBestServer() {
+        if (GOOD_SERVERS.size() == 0) {
+            throw new IllegalStateException("모든 서버 다운");
+        }
+
+        return GOOD_SERVERS.first();
     }
 }

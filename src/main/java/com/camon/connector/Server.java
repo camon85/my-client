@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class Server {
 
-    private String url;
+    private String host;
 
     // 낮을수록 우선순위 높음
     private int priority;
@@ -17,8 +17,8 @@ public class Server {
 
     }
 
-    Server(String url, int priority) {
-        this.url = url;
+    Server(String host, int priority) {
+        this.host = host;
         this.priority = priority;
     }
 }

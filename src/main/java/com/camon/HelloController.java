@@ -18,4 +18,9 @@ public class HelloController {
     public String hello() {
         return service.call();
     }
+
+    @RequestMapping(value = "/failover", method = RequestMethod.GET)
+    public String failOver() {
+        return service.failOverGet("/ping");
+    }
 }

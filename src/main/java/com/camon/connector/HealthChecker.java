@@ -16,8 +16,8 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.camon.connector.ServerList.BAD_SERVERS;
-import static com.camon.connector.ServerList.GOOD_SERVERS;
+import static com.camon.connector.ServerPool.BAD_SERVERS;
+import static com.camon.connector.ServerPool.GOOD_SERVERS;
 
 /**
  * Created by camon on 2016-07-18.
@@ -37,7 +37,7 @@ public class HealthChecker {
     }
 
     private void call(Server badServer) {
-        String url = badServer.getUrl();
+        String url = badServer.getHost();
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpget = new HttpGet(url);
 
@@ -48,16 +48,16 @@ public class HealthChecker {
             Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
             Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
             SortedSet<Server> collect = BAD_SERVERS.stream()
-                    .filter(s -> !s.getUrl().equals(url))
+                    .filter(s -> !s.getHost().equals(url))
                     .collect(Collectors.toCollection(supplier));
 
 
             BAD_SERVERS = collect;
             GOOD_SERVERS.add(badServer); // 호출되면 복구
         } catch (ClientProtocolException e) {
-            log.info("##### ClientProtocolException");
+            log.info("##### HealthChecker ClientProtocolException 에러들은 무시");
         } catch (IOException e) {
-            log.info("##### IOException");
+            log.info("##### HealthChecker IOException 에러들은 무시");
         }
     }
 }
