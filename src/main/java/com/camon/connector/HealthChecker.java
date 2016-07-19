@@ -43,7 +43,10 @@ public class HealthChecker {
 
         try (CloseableHttpResponse response = httpclient.execute(httpget)) {
             int statusCode = response.getStatusLine().getStatusCode();
-            log.info("##### " + statusCode);
+
+            if (statusCode != 200) {
+                return;
+            }
 
             Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
             Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
@@ -55,9 +58,9 @@ public class HealthChecker {
             BAD_SERVERS = collect;
             GOOD_SERVERS.add(badServer); // 호출되면 복구
         } catch (ClientProtocolException e) {
-            log.info("##### HealthChecker ClientProtocolException 에러들은 무시");
+            log.info("HealthChecker ClientProtocolException 에러들은 무시");
         } catch (IOException e) {
-            log.info("##### HealthChecker IOException 에러들은 무시");
+            log.info("HealthChecker IOException 에러들은 무시");
         }
     }
 }

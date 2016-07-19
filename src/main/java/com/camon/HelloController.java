@@ -14,11 +14,6 @@ public class HelloController {
     @Autowired
     private HelloService service;
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String hello() {
-        return service.call();
-    }
-
     @RequestMapping(value = "/failover", method = RequestMethod.GET)
     public String failOver() {
         return service.failOverGet("/ping");
