@@ -1,5 +1,6 @@
 package com.camon;
 
+import com.camon.connector.FailOverRestTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -13,6 +14,8 @@ public class Config {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate(new SimpleClientHttpRequestFactory());
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        RestTemplate restTemplate = new FailOverRestTemplate(requestFactory);
+        return restTemplate;
     }
 }

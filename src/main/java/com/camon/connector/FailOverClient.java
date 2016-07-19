@@ -8,6 +8,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -22,6 +23,7 @@ import static com.camon.connector.ServerPool.GOOD_SERVERS;
 /**
  * Created by camon on 2016-07-19.
  */
+@Component
 @Slf4j
 public class FailOverClient {
 

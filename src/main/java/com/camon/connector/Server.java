@@ -13,6 +13,8 @@ public class Server {
     // 낮을수록 우선순위 높음
     private int priority;
 
+    private ServerStatus status;
+
     Server() {
 
     }
