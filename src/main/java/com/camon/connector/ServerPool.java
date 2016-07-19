@@ -18,8 +18,9 @@ public class ServerPool {
     }
 
     private static void registerServers() {
-        GOOD_SERVERS.add(new Server("http://localhost:8100", 10));
-        GOOD_SERVERS.add(new Server("http://localhost:8200", 80));
+        GOOD_SERVERS.add(new Server("http://localhost:8100", 100));
+        GOOD_SERVERS.add(new Server("http://localhost:8200", 200));
+        GOOD_SERVERS.add(new Server("http://localhost:8300", 300));
     }
 
     synchronized public static void addServer(Server server) {
@@ -28,5 +29,13 @@ public class ServerPool {
 
     synchronized public static void removeServer(String url) {
 
+    }
+
+    public static Server getBestServer() {
+        if (GOOD_SERVERS.size() == 0) {
+            throw new IllegalStateException("모든 서버 다운");
+        }
+
+        return GOOD_SERVERS.first();
     }
 }

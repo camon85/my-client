@@ -36,13 +36,14 @@ public class FailOverRestTemplate extends RestTemplate {
 
         URI expanded = getUriTemplateHandler().expand(url, urlVariables);
 
-        T result = null;
+        T result;
+
         try {
             result = super.doExecute(expanded, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
             String retryUrl = failOver(expanded.getPath());
             expanded = getUriTemplateHandler().expand(retryUrl, urlVariables);
-            result = super.doExecute(expanded, method, requestCallback, responseExtractor);
+            result = execute(expanded, method, requestCallback, responseExtractor);
         }
 
         return result;
@@ -54,11 +55,13 @@ public class FailOverRestTemplate extends RestTemplate {
 
         URI expanded = getUriTemplateHandler().expand(url, urlVariables);
 
-        T result = null;
+        T result;
         try {
             result = super.doExecute(expanded, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-            failOver(expanded.getPath());
+            String retryUrl = failOver(expanded.getPath());
+            expanded = getUriTemplateHandler().expand(retryUrl, urlVariables);
+            result = execute(expanded, method, requestCallback, responseExtractor);
         }
         return result;
     }
@@ -71,14 +74,15 @@ public class FailOverRestTemplate extends RestTemplate {
         try {
             result = super.doExecute(url, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-//            failOver(expanded.getPath());
+            String retryUrl = failOver(url.getPath());
+            execute(retryUrl, method, requestCallback, responseExtractor);
         }
 
         return result;
     }
 
     private String failOver(String path) {
-        Server currentServer = getBestServer();
+        Server currentServer = ServerPool.getBestServer();
         log.info("currentServer: {}", currentServer);
         String host = currentServer.getHost();
         Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
@@ -90,15 +94,8 @@ public class FailOverRestTemplate extends RestTemplate {
         GOOD_SERVERS = collect;
         BAD_SERVERS.add(currentServer);
 
-        return getBestServer().getHost() + path;
+        return ServerPool.getBestServer().getHost() + path;
 
     }
 
-    private Server getBestServer() {
-        if (GOOD_SERVERS.size() == 0) {
-            throw new IllegalStateException("모든 서버 다운");
-        }
-
-        return GOOD_SERVERS.first();
-    }
 }

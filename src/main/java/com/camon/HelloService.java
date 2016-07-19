@@ -1,5 +1,6 @@
 package com.camon;
 
+import com.camon.connector.ServerPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,8 @@ public class HelloService {
     private RestTemplate restTemplate;
 
     public String failOverGet(String apiUrl) {
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity("http://localhost:8100/" + apiUrl, String.class);
+        String host = ServerPool.getBestServer().getHost();
+        ResponseEntity<String> responseEntity = restTemplate.getForEntity(host + apiUrl, String.class);
         return responseEntity.getBody();
 
 //        FailOverClient client = new FailOverClient();
