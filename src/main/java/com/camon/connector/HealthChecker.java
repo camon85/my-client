@@ -38,7 +38,7 @@ public class HealthChecker {
     }
 
     private boolean available(Server badServer) {
-        log.info("available check: {}", badServer);
+        log.info("hello? {}", badServer);
         String url = badServer.getHost();
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpget = new HttpGet(url);

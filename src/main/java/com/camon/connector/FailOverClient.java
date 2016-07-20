@@ -51,7 +51,7 @@ public class FailOverClient {
 
 
             ServerPool.setGoodServers(collect);
-            ServerPool.addBadServer(currentServer);
+//            ServerPool.addBadServer(currentServer);
 
             content = get(apuUrl);
         }

@@ -7,11 +7,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Created by camon on 2016-07-18.
@@ -23,13 +24,7 @@ public class ServerPool {
     @Setter
     private static SortedSet<Server> goodServers = new TreeSet<>(Comparator.comparing(Server::getPriority));
 
-    @Getter
-    @Setter
-    private static Set<Server> badServers = Collections.synchronizedSet(new HashSet<>());
-
-
     public static int registerServers(List<Server> servers) {
-
         goodServers.addAll(servers);
         return goodServers.size();
     }
@@ -51,6 +46,20 @@ public class ServerPool {
 
         return filteredServers.first();
     }
+
+    /**
+     * CLOSE 상태 서버 반환
+     * @return
+     */
+    public static SortedSet<Server> getBadServers() {
+        Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
+        Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
+        SortedSet<Server> filteredServers = goodServers.stream()
+                .filter(server -> ServerStatus.CLOSE.equals(server.getStatus()))
+                .collect(Collectors.toCollection(supplier));
+        return filteredServers;
+    }
+
 
     /**
      * 특정 서버 상태 변경. 성공 시 true 반환
@@ -100,42 +109,15 @@ public class ServerPool {
         return goodServers.removeIf(server -> url.contains(server.getHost()));
     }
 
-
-    // 서버 추가
-    public static void addBadServer(Server server) {
-        badServers.add(server);
-    }
-
-    // 서버 제거
-    public static boolean removeBadServer(Server targetServer) {
-        log.info("targetServer: {}", targetServer);
-
-        log.info("##### badServers a: {}", badServers);
-//        boolean b = badServers.removeIf(server -> server.getHost().equals(targetServer.getHost()));
-        Set<Server> collect = badServers.stream()
-                .filter(server -> server.getHost().equals(targetServer.getHost()))
-                .collect(toSet());
-        log.info(collect.toString());
-
-        boolean b = badServers.removeIf(server -> server.getHost().equals(targetServer.getHost()));
-        log.info("##### badServers b: {}", badServers);
-        return b;
-    }
-
-    public static boolean removeBadServer(String url) {
-        return badServers.removeIf(server -> url.contains(server.getHost()));
-    }
-
     public static Server getServerByUrl(String url) {
         return goodServers.stream().filter(server -> url.contains(server.getHost())).findFirst().get();
     }
 
     public static void recoverServer(List<Server> availableServers) {
-        log.info("availableServers: {}", availableServers);
+        log.info("recovered server: {}", availableServers);
 
         for (Server availableServer : availableServers) {
             changeStatus(availableServer, ServerStatus.OPEN);
-            removeBadServer(availableServer);
         }
     }
 

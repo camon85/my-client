@@ -84,9 +84,6 @@ public class FailOverRestTemplate extends RestTemplate {
         // CLOSE로 변경
         ServerPool.changeStatus(server, ServerStatus.CLOSE);
 
-        // BAD 목록에 추가
-        ServerPool.addBadServer(server);
-
         return ServerPool.getBestServer().getHost() + path;
 
     }
