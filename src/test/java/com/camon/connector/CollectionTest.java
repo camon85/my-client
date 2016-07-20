@@ -1,6 +1,7 @@
 package com.camon.connector;
 
 import com.camon.connector.model.Server;
+import com.camon.connector.model.ServerStatus;
 import org.junit.Test;
 
 import java.util.*;
@@ -60,5 +61,33 @@ public class CollectionTest {
 
     }
 
+    @Test
+    public void contains() {
+        Set<Server> servers = new HashSet<>();
+        servers.add(new Server("http://localhost:8100", 100, ServerStatus.OPEN));
+        servers.add(new Server("http://localhost:8200", 200, ServerStatus.OPEN));
+        servers.add(new Server("http://localhost:8300", 300, ServerStatus.OPEN));
+
+        String url = "http://localhost:8200/ping";
+
+        servers.stream()
+                .filter(server -> url.contains(server.getHost()))
+                .forEach(server -> System.out.println("1" + server)
+        );
+    }
+
+    @Test
+    public void remove() {
+        Set<Server> servers = Collections.synchronizedSet(new HashSet<>());
+        servers.add(new Server("http://localhost:8100", 100, ServerStatus.OPEN));
+        servers.add(new Server("http://localhost:8200", 200, ServerStatus.OPEN));
+        servers.add(new Server("http://localhost:8300", 300, ServerStatus.OPEN));
+        System.out.println(servers);
+
+        Server removeTargetServer = new Server("http://localhost:8100", 100, ServerStatus.OPEN);
+        boolean b = servers.removeIf(server -> server.getHost().equals(removeTargetServer.getHost()));
+        System.out.println(b);
+        System.out.println(servers);
+    }
 
 }

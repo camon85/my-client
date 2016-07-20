@@ -11,9 +11,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
-import static com.camon.connector.ServerPool.BAD_SERVERS;
+import static com.camon.connector.ServerPool.getServerByUrl;
 
 /**
  * Created by camon on 2016-07-19.
@@ -36,7 +37,7 @@ public class FailOverRestTemplate extends RestTemplate {
         try {
             result = super.doExecute(expanded, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-            String retryUrl = failOver(expanded.getPath());
+            String retryUrl = failOver(url, expanded.getPath());
             expanded = getUriTemplateHandler().expand(retryUrl, urlVariables);
             result = execute(expanded, method, requestCallback, responseExtractor);
         }
@@ -54,7 +55,7 @@ public class FailOverRestTemplate extends RestTemplate {
         try {
             result = super.doExecute(expanded, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-            String retryUrl = failOver(expanded.getPath());
+            String retryUrl = failOver(url, expanded.getPath());
             expanded = getUriTemplateHandler().expand(retryUrl, urlVariables);
             result = execute(expanded, method, requestCallback, responseExtractor);
         }
@@ -69,25 +70,33 @@ public class FailOverRestTemplate extends RestTemplate {
         try {
             result = super.doExecute(url, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-            String retryUrl = failOver(url.getPath());
+            String retryUrl = failOver(url.toString(), url.getPath());
             execute(retryUrl, method, requestCallback, responseExtractor);
         }
 
         return result;
     }
 
-    private String failOver(String path) {
-        Server currentServer = ServerPool.getBestServer();
-        log.info("currentServer: {}", currentServer);
+    private String failOver(String url, String path) {
+        Server server = getServerByUrl(url);
+        log.info("fail Server: {}", server);
 
         // CLOSE로 변경
-        ServerPool.changeStatus(currentServer, ServerStatus.CLOSE);
+        ServerPool.changeStatus(server, ServerStatus.CLOSE);
 
         // BAD 목록에 추가
-        BAD_SERVERS.add(currentServer);
+        ServerPool.addBadServer(server);
 
         return ServerPool.getBestServer().getHost() + path;
 
     }
 
+    /**
+     * 서버 등록. 전체 서버 개수 리턴
+     * @param servers
+     * @return
+     */
+    public int registerServers(List<Server> servers) {
+        return ServerPool.registerServers(servers);
+    }
 }

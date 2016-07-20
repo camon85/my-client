@@ -18,9 +18,6 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.camon.connector.ServerPool.BAD_SERVERS;
-import static com.camon.connector.ServerPool.GOOD_SERVERS;
-
 /**
  * Created by camon on 2016-07-19.
  */
@@ -48,13 +45,13 @@ public class FailOverClient {
             log.info("##### IOException");
             Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
             Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
-            SortedSet<Server> collect = GOOD_SERVERS.stream()
+            SortedSet<Server> collect = ServerPool.getGoodServers().stream()
                     .filter(s -> !s.getHost().equals(host))
                     .collect(Collectors.toCollection(supplier));
 
 
-            GOOD_SERVERS = collect;
-            BAD_SERVERS.add(currentServer);
+            ServerPool.setGoodServers(collect);
+            ServerPool.addBadServer(currentServer);
 
             content = get(apuUrl);
         }
@@ -63,10 +60,10 @@ public class FailOverClient {
     }
 
     private Server getBestServer() {
-        if (GOOD_SERVERS.size() == 0) {
+        if (ServerPool.getGoodServers().size() == 0) {
             throw new IllegalStateException("모든 서버 다운");
         }
 
-        return GOOD_SERVERS.first();
+        return ServerPool.getGoodServers().first();
     }
 }

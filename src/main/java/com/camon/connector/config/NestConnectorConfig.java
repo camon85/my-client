@@ -11,8 +11,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableScheduling
 @Slf4j
-public class ConnectorConfig {
+public class NestConnectorConfig {
     static {
-        log.info("##### ConnectorConfig");
+        log.info("NestConnectorConfig is running");
     }
 }
