@@ -1,6 +1,7 @@
 package com.camon.connector;
 
 import com.camon.connector.model.Server;
+import com.camon.connector.model.ServerStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -11,14 +12,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import static com.camon.connector.ServerPool.BAD_SERVERS;
 import static com.camon.connector.ServerPool.GOOD_SERVERS;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Created by camon on 2016-07-18.
@@ -49,15 +47,14 @@ public class HealthChecker {
                 return;
             }
 
-            Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
-            Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
-            SortedSet<Server> collect = BAD_SERVERS.stream()
+            Set<Server> collect = BAD_SERVERS.stream()
                     .filter(s -> !s.getHost().equals(url))
-                    .collect(Collectors.toCollection(supplier));
-
+                    .collect(toSet());
 
             BAD_SERVERS = collect;
-            GOOD_SERVERS.add(badServer); // 호출되면 복구
+
+            // 호출되면 복구
+            ServerPool.changeStatus(badServer, ServerStatus.OPEN);
         } catch (ClientProtocolException e) {
             log.info("HealthChecker ClientProtocolException 에러들은 무시");
         } catch (IOException e) {

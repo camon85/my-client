@@ -8,5 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NestConnectorException extends RuntimeException {
 
+    public NestConnectorException() {
 
+    }
+
+    public NestConnectorException(String message) {
+        super(message);
+    }
 }

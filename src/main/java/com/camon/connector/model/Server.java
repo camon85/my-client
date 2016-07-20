@@ -23,4 +23,10 @@ public class Server {
         this.host = host;
         this.priority = priority;
     }
+
+    public Server(String host, int priority, ServerStatus status) {
+        this.host = host;
+        this.priority = priority;
+        this.status = status;
+    }
 }
