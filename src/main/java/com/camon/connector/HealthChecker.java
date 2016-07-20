@@ -2,15 +2,14 @@ package com.camon.connector;
 
 import com.camon.connector.model.Server;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,6 +20,9 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class HealthChecker {
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Scheduled(fixedDelay = 2000)
     public void check() {
@@ -40,18 +42,13 @@ public class HealthChecker {
     private boolean available(Server badServer) {
         log.info("hello? {}", badServer);
         String url = badServer.getHost();
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpget = new HttpGet(url);
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
-        try (CloseableHttpResponse response = httpclient.execute(httpget)) {
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            if (statusCode == 200) {
+            if (response.getStatusCode() == HttpStatus.OK) {
                 return true;
             }
-        } catch (ClientProtocolException e) {
-            // ignore
-        } catch (IOException e) {
+        } catch (RestClientException e) {
             // ignore
         }
 
