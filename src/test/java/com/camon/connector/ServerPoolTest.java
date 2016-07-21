@@ -19,9 +19,9 @@ public class ServerPoolTest {
     public void bestServer() {
         Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
         SortedSet<Server> GOOD_SERVERS = new TreeSet<>(byPriority);
-        GOOD_SERVERS.add(new Server("http://localhost:8100", 100, ServerStatus.CLOSE));
-        GOOD_SERVERS.add(new Server("http://localhost:8200", 200, ServerStatus.CLOSE));
-        GOOD_SERVERS.add(new Server("http://localhost:8300", 300, ServerStatus.CLOSE));
+        GOOD_SERVERS.add(new Server("http://localhost:8100", 100, ServerStatus.CLOSED));
+        GOOD_SERVERS.add(new Server("http://localhost:8200", 200, ServerStatus.CLOSED));
+        GOOD_SERVERS.add(new Server("http://localhost:8300", 300, ServerStatus.CLOSED));
 
         Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
 
@@ -40,9 +40,9 @@ public class ServerPoolTest {
     public void changeStatus() {
         Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
         SortedSet<Server> GOOD_SERVERS = new TreeSet<>(byPriority);
-        GOOD_SERVERS.add(new Server("http://localhost:8100", 100, ServerStatus.CLOSE));
-        GOOD_SERVERS.add(new Server("http://localhost:8200", 200, ServerStatus.CLOSE));
-        GOOD_SERVERS.add(new Server("http://localhost:8300", 300, ServerStatus.CLOSE));
+        GOOD_SERVERS.add(new Server("http://localhost:8100", 100, ServerStatus.CLOSED));
+        GOOD_SERVERS.add(new Server("http://localhost:8200", 200, ServerStatus.CLOSED));
+        GOOD_SERVERS.add(new Server("http://localhost:8300", 300, ServerStatus.CLOSED));
 
         Server selectedServer = GOOD_SERVERS.first();
 
@@ -53,4 +53,5 @@ public class ServerPoolTest {
             }
         }
     }
+
 }

@@ -21,8 +21,5 @@ public class HelloService {
         String host = ServerPool.getBestServer().getHost();
         ResponseEntity<String> responseEntity = failOverRestTemplate.getForEntity(host + apiUrl, String.class);
         return responseEntity.getBody();
-
-//        FailOverClient client = new FailOverClient();
-//        return client.get(apoiUrl);
     }
 }

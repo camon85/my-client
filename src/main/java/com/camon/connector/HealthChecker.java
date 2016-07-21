@@ -25,33 +25,39 @@ public class HealthChecker {
     private RestTemplate restTemplate;
 
     @Scheduled(fixedDelay = 2000)
-    public void check() {
+    public void checkStatus() {
+        log.info("========== start checkStatus ==========");
         Set<Server> badServers = ServerPool.getBadServers();
-        log.info("HealthChecker GOOD_SERVERS: " + ServerPool.getGoodServers());
-        log.info("HealthChecker BAD_SERVERS: " + badServers);
+
+        log.info("HealthChecker OPEN_SERVERS: " + ServerPool.getSERVERS());
+        log.info("HealthChecker CLOSED_SERVERS: " + badServers);
 
         if (badServers.size() > 0) {
             List<Server> availableServers = badServers.stream()
-                    .filter(this::available)
+                    .filter(this::isAvailable)
                     .collect(Collectors.toList());
 
             ServerPool.recoverServer(availableServers);
         }
+        log.info("========== end checkStatus ==========");
     }
 
-    private boolean available(Server badServer) {
-        log.info("hello? {}", badServer);
+    private boolean isAvailable(Server badServer) {
+        boolean available = false;
         String url = badServer.getHost();
+
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                return true;
+                available = true;
             }
         } catch (RestClientException e) {
             // ignore
         }
 
-        return false;
+        log.info("u ok? {}", badServer.getHost());
+        log.info("{}: {}", badServer.getHost(), available);
+        return available;
     }
 }

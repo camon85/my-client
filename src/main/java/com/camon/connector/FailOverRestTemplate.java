@@ -37,7 +37,7 @@ public class FailOverRestTemplate extends RestTemplate {
         try {
             result = super.doExecute(expanded, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-            String retryUrl = failOver(url, expanded.getPath());
+            String retryUrl = retryUrl(url, expanded.getPath());
             expanded = getUriTemplateHandler().expand(retryUrl, urlVariables);
             result = execute(expanded, method, requestCallback, responseExtractor);
         }
@@ -55,7 +55,7 @@ public class FailOverRestTemplate extends RestTemplate {
         try {
             result = super.doExecute(expanded, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-            String retryUrl = failOver(url, expanded.getPath());
+            String retryUrl = retryUrl(url, expanded.getPath());
             expanded = getUriTemplateHandler().expand(retryUrl, urlVariables);
             result = execute(expanded, method, requestCallback, responseExtractor);
         }
@@ -70,22 +70,22 @@ public class FailOverRestTemplate extends RestTemplate {
         try {
             result = super.doExecute(url, method, requestCallback, responseExtractor);
         } catch (RestClientException e) {
-            String retryUrl = failOver(url.toString(), url.getPath());
+            String retryUrl = retryUrl(url.toString(), url.getPath());
             execute(retryUrl, method, requestCallback, responseExtractor);
         }
 
         return result;
     }
 
-    private String failOver(String url, String path) {
+    private String retryUrl(String url, String path) {
         Server server = getServerByUrl(url);
         log.info("fail Server: {}", server);
 
         // CLOSE로 변경
-        ServerPool.changeStatus(server, ServerStatus.CLOSE);
+        ServerPool.changeStatus(server, ServerStatus.CLOSED);
 
+        // best server 반환
         return ServerPool.getBestServer().getHost() + path;
-
     }
 
     /**
