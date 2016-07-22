@@ -2,6 +2,8 @@ package com.camon.connector;
 
 import com.camon.connector.model.Server;
 import com.camon.connector.model.ServerStatus;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -14,17 +16,32 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import static com.camon.connector.ServerPool.getServerByUrl;
-
 /**
  * Created by camon on 2016-07-19.
  */
 @Slf4j
 public class FailOverRestTemplate extends RestTemplate {
 
-     public FailOverRestTemplate(ClientHttpRequestFactory requestFactory) {
+    @Getter
+    @Setter
+    private ServerPool serverPool;
+
+    private HealthChecker healthChecker;
+
+    public FailOverRestTemplate(ClientHttpRequestFactory requestFactory) {
         super();
         setRequestFactory(requestFactory);
+    }
+
+    /**
+     * 서버 등록. 전체 서버 개수 리턴
+     * @param servers
+     * @return
+     */
+    public int registerServers(List<Server> servers) {
+        this.serverPool = new ServerPool(servers);
+        this.healthChecker = new HealthChecker(serverPool);
+        return serverPool.getServers().size();
     }
 
     @Override
@@ -78,22 +95,15 @@ public class FailOverRestTemplate extends RestTemplate {
     }
 
     private String retryUrl(String url, String path) {
-        Server server = getServerByUrl(url);
+        Server server = serverPool.getServerByUrl(url);
         log.info("fail Server: {}", server);
 
         // CLOSE로 변경
-        ServerPool.changeStatus(server, ServerStatus.CLOSED);
+        serverPool.changeStatus(server, ServerStatus.CLOSED);
 
         // best server 반환
-        return ServerPool.getBestServer().getHost() + path;
+        return serverPool.getBestServer().getHost() + path;
     }
 
-    /**
-     * 서버 등록. 전체 서버 개수 리턴
-     * @param servers
-     * @return
-     */
-    public int registerServers(List<Server> servers) {
-        return ServerPool.registerServers(servers);
-    }
+
 }

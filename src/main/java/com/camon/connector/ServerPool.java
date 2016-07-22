@@ -22,25 +22,35 @@ public class ServerPool {
     private static Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
 
     @Getter
-    private static SortedSet<Server> SERVERS =  Collections.synchronizedSortedSet(new TreeSet<>(byPriority));
+    private SortedSet<Server> servers;
+
+
+    public ServerPool() {
+        // do nothing
+    }
+
+    public ServerPool(List<Server> serverList) {
+        this.servers = Collections.synchronizedSortedSet(new TreeSet<>(byPriority));
+        servers.addAll(serverList);
+    }
 
     /**
      * 서버 추가
      * @param servers
      * @return
      */
-    public static int registerServers(List<Server> servers) {
-        SERVERS.addAll(servers);
-        return SERVERS.size();
+    public int registerServers(List<Server> servers) {
+        servers.addAll(servers);
+        return servers.size();
     }
 
     /**
      * 서버 추가
      * @param server
      */
-    public static int registerServer(Server server) {
-        SERVERS.add(server);
-        return SERVERS.size();
+    public int registerServer(Server server) {
+        servers.add(server);
+        return servers.size();
     }
 
     /**
@@ -48,8 +58,8 @@ public class ServerPool {
      * @param targetServer
      * @return
      */
-    public static boolean unregisterServer(Server targetServer) {
-        return SERVERS.removeIf(server -> server.getHost().equals(targetServer.getHost()));
+    public boolean unregisterServer(Server targetServer) {
+        return servers.removeIf(server -> server.getHost().equals(targetServer.getHost()));
     }
 
     /**
@@ -57,18 +67,18 @@ public class ServerPool {
      * @param url
      * @return
      */
-    public static boolean unregisterServer(String url) {
-        return SERVERS.removeIf(server -> url.contains(server.getHost()));
+    public boolean unregisterServer(String url) {
+        return servers.removeIf(server -> url.contains(server.getHost()));
     }
 
     /**
      * OPEN 상태이면서, 우선 순위가 높은 서버 반환
      * @return
      */
-    public static Server getBestServer() {
+    public Server getBestServer() {
         Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
         Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
-        SortedSet<Server> filteredServers = SERVERS.stream()
+        SortedSet<Server> filteredServers = servers.stream()
                 .filter(server -> ServerStatus.OPEN.equals(server.getStatus()))
                 .collect(Collectors.toCollection(supplier));
 
@@ -83,10 +93,10 @@ public class ServerPool {
      * CLOSE 상태 서버 반환
      * @return
      */
-    public static SortedSet<Server> getBadServers() {
+    public SortedSet<Server> getBadServers() {
         Comparator<Server> byPriority = Comparator.comparing(Server::getPriority);
         Supplier<SortedSet<Server>> supplier = () -> new TreeSet<>(byPriority);
-        SortedSet<Server> filteredServers = SERVERS.stream()
+        SortedSet<Server> filteredServers = servers.stream()
                 .filter(server -> ServerStatus.CLOSED.equals(server.getStatus()))
                 .collect(Collectors.toCollection(supplier));
         return filteredServers;
@@ -98,8 +108,8 @@ public class ServerPool {
      * @param status
      * @return
      */
-    public static boolean changeStatus(Server targetServer, ServerStatus status) {
-        for (Server server : SERVERS) {
+    public boolean changeStatus(Server targetServer, ServerStatus status) {
+        for (Server server : servers) {
             if (targetServer.getHost().equals(server.getHost())) {
                 server.setStatus(status);
                 return true;
@@ -115,8 +125,8 @@ public class ServerPool {
      * @param priority
      * @return
      */
-    public static boolean changePriority(Server targetServer, int priority) {
-        for (Server server : SERVERS) {
+    public boolean changePriority(Server targetServer, int priority) {
+        for (Server server : servers) {
             if (targetServer.getHost().equals(server.getHost())) {
                 server.setPriority(priority);
                 return true;
@@ -127,12 +137,11 @@ public class ServerPool {
     }
 
 
-    public static Server getServerByUrl(String url) {
-        return SERVERS.stream().filter(server -> url.contains(server.getHost())).findFirst().get();
+    public Server getServerByUrl(String url) {
+        return servers.stream().filter(server -> url.contains(server.getHost())).findFirst().get();
     }
 
-    public static void recoverServer(List<Server> availableServers) {
-
+    public void recoverServer(List<Server> availableServers) {
         for (Server availableServer : availableServers) {
             changeStatus(availableServer, ServerStatus.OPEN);
             log.info("recovered server: {}", availableServer);

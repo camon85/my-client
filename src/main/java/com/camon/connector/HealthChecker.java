@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Created by camon on 2016-07-18.
  */
+
 @Component
 @Slf4j
 public class HealthChecker {
@@ -24,12 +25,22 @@ public class HealthChecker {
     @Autowired
     private RestTemplate restTemplate;
 
+    private ServerPool serverPool;
+
+    public HealthChecker() {
+        // do nothing
+    }
+
+    public HealthChecker(ServerPool serverPool) {
+        this.serverPool = serverPool;
+    }
+
     @Scheduled(fixedDelay = 2000)
     public void checkStatus() {
         log.info("========== start checkStatus ==========");
-        Set<Server> badServers = ServerPool.getBadServers();
+        Set<Server> badServers = serverPool.getBadServers();
 
-        log.info("HealthChecker OPEN_SERVERS: " + ServerPool.getSERVERS());
+        log.info("HealthChecker OPEN_SERVERS: " + serverPool.getServers());
         log.info("HealthChecker CLOSED_SERVERS: " + badServers);
 
         if (badServers.size() > 0) {
@@ -37,7 +48,7 @@ public class HealthChecker {
                     .filter(this::isAvailable)
                     .collect(Collectors.toList());
 
-            ServerPool.recoverServer(availableServers);
+            serverPool.recoverServer(availableServers);
         }
         log.info("========== end checkStatus ==========");
     }
