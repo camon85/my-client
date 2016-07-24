@@ -14,8 +14,13 @@ public class HelloController {
     @Autowired
     private HelloService service;
 
-    @RequestMapping(value = "/failover", method = RequestMethod.GET)
-    public String failOver() {
-        return service.failOverGet("/ping");
+    @RequestMapping(value = "/stamp", method = RequestMethod.GET)
+    public String stamp() {
+        return service.stampFailOverGet("/ping");
+    }
+
+    @RequestMapping(value = "/console", method = RequestMethod.GET)
+    public String console() {
+        return service.consoleFailOverGet("/ping");
     }
 }

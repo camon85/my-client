@@ -17,7 +17,21 @@ import java.util.List;
 public class Config {
 
     @Bean
-    public FailOverRestTemplate failOverRestTemplate() {
+    public FailOverRestTemplate consoleFailOverRestTemplate() {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        FailOverRestTemplate failOverRestTemplate = new FailOverRestTemplate(requestFactory);
+
+        List<Server> servers = new ArrayList<>();
+        servers.add(new Server("http://localhost:7100", 100, ServerStatus.OPEN));
+        servers.add(new Server("http://localhost:7200", 200, ServerStatus.OPEN));
+        servers.add(new Server("http://localhost:7300", 300, ServerStatus.OPEN));
+        failOverRestTemplate.registerServers(servers);
+
+        return failOverRestTemplate;
+    }
+
+    @Bean
+    public FailOverRestTemplate stampFailOverRestTemplate() {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         FailOverRestTemplate failOverRestTemplate = new FailOverRestTemplate(requestFactory);
 
@@ -29,4 +43,5 @@ public class Config {
 
         return failOverRestTemplate;
     }
+
 }

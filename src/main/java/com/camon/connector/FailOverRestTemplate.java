@@ -1,12 +1,16 @@
 package com.camon.connector;
 
+import com.camon.connector.config.NestConnectorConfig;
 import com.camon.connector.model.Server;
 import com.camon.connector.model.ServerStatus;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestClientException;
@@ -40,7 +44,14 @@ public class FailOverRestTemplate extends RestTemplate {
      */
     public int registerServers(List<Server> servers) {
         this.serverPool = new ServerPool(servers);
-        this.healthChecker = new HealthChecker(serverPool);
+//        this.healthChecker = new HealthChecker(serverPool);
+
+        ApplicationContext context = new AnnotationConfigApplicationContext(NestConnectorConfig.class);
+        ThreadPoolTaskExecutor taskExecutor = (ThreadPoolTaskExecutor) context.getBean("taskExecutor");
+        HealthChecker healthCheckerTask = (HealthChecker) context.getBean("healthChecker");
+        healthCheckerTask.setServerPool(serverPool);
+        taskExecutor.execute(healthCheckerTask);
+
         return serverPool.getServers().size();
     }
 

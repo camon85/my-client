@@ -1,8 +1,11 @@
 package com.camon.connector;
 
 import com.camon.connector.model.Server;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,23 +22,36 @@ import java.util.stream.Collectors;
  */
 
 @Component
+@Scope("prototype")
 @Slf4j
-public class HealthChecker {
+public class HealthChecker implements Runnable {
 
     @Autowired
     private RestTemplate restTemplate;
 
+    @Setter
     private ServerPool serverPool;
 
-    public HealthChecker() {
-        // do nothing
+//    public HealthChecker() {
+//    }
+//
+//    public HealthChecker(ServerPool serverPool) {
+//        this.serverPool = serverPool;
+//    }
+
+    @Override
+    public void run() {
+        try {
+            while(true) {
+                checkStatus();
+                Thread.sleep(2000);
+            }
+        } catch (InterruptedException e) {
+            // do nothing
+        }
     }
 
-    public HealthChecker(ServerPool serverPool) {
-        this.serverPool = serverPool;
-    }
-
-    @Scheduled(fixedDelay = 2000)
+//    @Scheduled(fixedDelay = 2000)
     public void checkStatus() {
         log.info("========== start checkStatus ==========");
         Set<Server> badServers = serverPool.getBadServers();
@@ -71,4 +87,6 @@ public class HealthChecker {
         log.info("{}: {}", badServer.getHost(), available);
         return available;
     }
+
+
 }
